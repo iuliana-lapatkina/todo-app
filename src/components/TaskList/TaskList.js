@@ -1,15 +1,30 @@
-import React from 'react';
+import React, { Component } from 'react';
 
 import Task from '../Task/Task';
 
-const TaskList = () => {
-  return (
-    <ul className="task-list">
-      <Task status="completed"/>
-      <Task status="editing"/>
-      <Task status="active"/>
-    </ul>
-  );
+export default class TaskList extends Component {
+
+
+  render () {
+    const { todos, deleteItem } = this.props;
+
+    const elements = todos.map((item) => {
+      const { id, ...itemProps } = item;
+  
+      return (
+        <li key={id} >   
+          <Task 
+            {...itemProps }
+            deleteItem = { () => deleteItem(id) } />
+        </li>
+      );
+    });
+  
+    return (
+      <ul className="task-list">
+        { elements }
+      </ul>
+    );
+  }
 }
 
-export default TaskList;
