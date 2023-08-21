@@ -233,7 +233,7 @@ body {
 	color: #4d4d4d;
 }
 
-.view.completed label .description {
+.task-list li.completed label .description {
 	color: #cdcdcd;
 	text-decoration: line-through;
 }

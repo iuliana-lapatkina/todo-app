@@ -3,43 +3,25 @@ import { formatDistanceToNow } from 'date-fns'
 
 export default class Task extends Component {
 
-  state = {
-    done: false
-  }
-
-  isCompleted = () => {
-    this.setState(( { done } ) => {
-      return {
-        done: !done
-      }
-    })
-  }
-
   render () {
 
-    const { label, createTime, deleteItem } = this.props;
-    const { done } = this.state;
-
-    let classNames = 'view';
-    if (done) {
-      classNames += ' completed';
-    }
-
+    const { id, label, createTime, onToggleDone, onDeleted, editItem } = this.props;
 
     let time = formatDistanceToNow(
       createTime,
       {includeSeconds: true}
     )
+
     return (
       <>
-        <div className = { classNames } onClick = { this.isCompleted } >
-          <input className="toggle" type="checkbox" />
-          <label>
+        <div className="view" >
+          <input id={ id } className="toggle" type="checkbox" onClick = { onToggleDone }/>
+          <label htmlFor={ id }  >
             <span className="description">{ label }</span>
             <span className="created">created {time} ago</span>
           </label>
-          <button className="icon icon-edit"></button>
-          <button className="icon icon-destroy" onClick = { deleteItem } ></button>
+          <button className="icon icon-edit"  onClick = { editItem } ></button>
+          <button className="icon icon-destroy" onClick = { onDeleted } ></button>
         </div> 
         <input type="text" className="edit" defaultValue="Editing task"></input>
       </>

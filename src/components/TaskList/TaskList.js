@@ -4,18 +4,33 @@ import Task from '../Task/Task';
 
 export default class TaskList extends Component {
 
-
   render () {
-    const { todos, deleteItem } = this.props;
-
+    const { todos, onToggleDone, onDeleted, editItem } = this.props;
+    console.log(todos);
+    
     const elements = todos.map((item) => {
-      const { id, ...itemProps } = item;
-  
+      const { id, done, editing, ...itemProps } = item;
+      console.log(id);
+      console.log(done);
+      console.log(editing);
+      let classNames = 'todo-list-item';
+
+      if (editing) {
+        classNames += ' editing';
+      }
+
+      if (done) {
+        classNames += ' completed';
+      } 
+      
       return (
-        <li key={id} >   
-          <Task 
+        <li key={id} className={ classNames } >   
+          <Task
+            id = { id }
             {...itemProps }
-            deleteItem = { () => deleteItem(id) } />
+            onToggleDone = { () => onToggleDone(id) }
+            onDeleted = { () => onDeleted(id) }
+            editItem = { () => editItem(id) }/>
         </li>
       );
     });
