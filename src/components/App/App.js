@@ -9,82 +9,160 @@ export default class App extends Component {
 
   state = {
     todoData: [
-      this.createTodoItem('Completed task', new Date()),
-      this.createTodoItem('Editing task', new Date()),
-      this.createTodoItem('Active task', new Date()),
+      this.createTodoItem('Completed task'),
+      this.createTodoItem('Editing task'),
+      this.createTodoItem('Active task'),
     ]
   };
 
-  createTodoItem (label, createTime) {
-    return  {
-      label,
-      done: false,
-      editing: false,
-      createTime,
-      id: this.maxId++
-    }
+  addItem  = (label) => {
+    this.setState(( { todoData } ) => {
+      const newItem = this.createTodoItem(label)
+      return {
+        todoData: [...todoData, newItem ]
+      }
+    });
   }
 
   deleteItem = (id) => {
     this.setState(( { todoData } ) => {
-      const idx = todoData.findIndex((el) => el.id === id);
+      const index = this.findIndex(todoData, id)
       const newArray = [
-        ...todoData.slice(0, idx),
-        ...todoData.slice(idx + 1)
+        ...todoData.slice(0, index),
+        ...todoData.slice(index + 1)
       ];
-      console.log(todoData);
-      console.log(newArray);
       return {
         todoData: newArray
       }
     });
   }
 
-  toggleProperty = (arr, id, propName) => {
-    const idx = arr.findIndex((el) => el.id === id);
-    const oldItem = arr[idx];
-    const newItem = {...oldItem,
-      [propName]: !oldItem[propName]
-    }
-    
-    return [
-      ...arr.slice(0, idx),
-      newItem,
-      ...arr.slice(idx + 1)
-    ];
-  }
-
-  editItem = (id) => {
+  ediItem = (newLabel, id) => {
     this.setState(( { todoData } ) => {
-      console.log('editItem', id);
-      console.log(todoData);
+      const index = this.findIndex(todoData, id)
+      const oldItem = todoData[index];
+      const newItem = {...oldItem,
+        label: newLabel
+      };
+      const newData = [
+        ...todoData.slice(0, index),
+        newItem,
+        ...todoData.slice(index + 1)
+      ];
       return {
-        todoData: this.toggleProperty(todoData, id, 'editing')
+        todoData : newData
       }
     })
-  };
+    this.onToggleEdit(id);
+  }
 
   onToggleDone = (id) => {
     this.setState(( { todoData } ) => {
-      console.log('onToggleDone', id);
-      console.log(todoData);
       return {
         todoData: this.toggleProperty(todoData, id, 'done')
       }
     })
   };
 
+  onToggleEdit = (id) => {
+    this.setState(( { todoData } ) => {
+      return {
+        todoData: this.toggleProperty(todoData, id, 'editing')
+      }
+    })
+  };
+
+  filterItems = (status) => {
+    this.allVisible();
+    if (!status) return;
+    this.setState(( { todoData } ) => {
+
+      let doneId;
+      if (status === 'done') {
+        doneId = todoData.filter((el) => !el['done']).map((el) => el.id)
+      } 
+      if (status === 'active') {
+        doneId = todoData.filter((el) => el['done']).map((el) => el.id)
+      } 
+      let newArr = [...todoData]
+      doneId.forEach(id => {
+        let newItem = todoData.find((el) => el.id === id);
+        newItem = {...newItem,
+          hidden: true
+        }
+        let newItemIndx = todoData.findIndex((el) => el.id === id);
+        newArr[newItemIndx] = newItem;
+      })
+      return {
+        todoData: newArr
+      }
+    })
+  }
+
+  allVisible = () => {
+    this.setState(( { todoData } ) => {
+      const newData = [...todoData];
+      newData.map(el => el.hidden = false)
+      return {
+        todoData: newData
+      }
+    });
+  }
+
+  clearCompleted = () => {
+      let doneArray = this.state.todoData.filter((el) => el.done);
+      doneArray.forEach(item => this.deleteItem(item.id))
+  }
+
+  createTodoItem (label) {
+    return  {
+      label,
+      done: false,
+      editing: false,
+      hidden: false,
+      createTime:new Date(),
+      id: this.maxId++
+    }
+  }
+
+  toggleProperty = (arr, id, propName) => {
+    const index = this.findIndex(arr, id)
+    const oldItem = arr[index];
+    const newItem = {...oldItem,
+      [propName]: !oldItem[propName]
+    }
+    
+    return [
+      ...arr.slice(0, index),
+      newItem,
+      ...arr.slice(index + 1)
+    ];
+  }
+
+  findIndex = (arr, id) => {
+    return arr.findIndex((el) => el.id === id);
+  }
+
   render () {
+
+    const { todoData } = this.state;
+    const doneCount = todoData.filter((el) => el.done).length;
+    const todoCount = todoData.length - doneCount;
+
     return (
       <section className="todoapp">
-        <Header />
+        <Header addItem = { this.addItem } />
         <section className="main">
           <TaskList 
             todos = { this.state.todoData } 
             onDeleted = { this.deleteItem }
             onToggleDone = { this.onToggleDone }
-            editItem = { this.editItem } />
-          <Footer />
+            onEdited = { this.ediItem }
+            onToggleEdit = { this.onToggleEdit } />
+          <Footer 
+            todoCount={ todoCount }
+            clearCompleted = { this.clearCompleted }
+            onFiltered = { this.filterItems }/>
         </section>
       </section>
     );
