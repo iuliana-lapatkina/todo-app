@@ -1,6 +1,11 @@
 import React, { Component } from 'react';
+import PropTypes from 'prop-types';
 
 export default class TasksFilter extends Component {
+
+  static propTypes = {
+    onFiltered: PropTypes.func.isRequired, 
+  }
 
   state = {
     isSelectedAll: true,
@@ -33,8 +38,6 @@ export default class TasksFilter extends Component {
       }
     })
   }
-
-  
 
   render() {
     const { onFiltered } = this.props;

@@ -1,7 +1,20 @@
 import React, { Component } from 'react';
 import { formatDistanceToNow } from 'date-fns'
-
+import PropTypes from 'prop-types';
 export default class Task extends Component {
+
+  static defaultProps = {
+    createTime: new Date()
+  }
+
+  static propTypes = {
+    label: PropTypes.string.isRequired,
+    createTime: PropTypes.instanceOf(Date),
+    onToggleDone: PropTypes.func.isRequired,
+    onDeleted: PropTypes.func.isRequired,
+    onEdited: PropTypes.func.isRequired, 
+    onToggleEdit: PropTypes.func.isRequired
+  }
 
   state = {
     label: ''
@@ -16,10 +29,18 @@ export default class Task extends Component {
   onSubmit = (e) => {
     e.preventDefault();
     let id = this.props.id;
-    this.props.onEdited(this.state.label, id);
-    this.setState({
-      label: ''
-    })
+    if (!(this.state.label).trim()) {
+      this.props.onEdited(this.props.label, id);
+      this.setState({
+        label: (this.props.label)
+      })
+    } else {
+      this.props.onEdited(this.state.label, id);
+      this.setState({
+        label: ''
+      })
+    };
+   
   }
 
   enterPress = (e) => {
@@ -27,7 +48,6 @@ export default class Task extends Component {
       this.onSubmit(e);
     }
   }
-
 
   render () {
 

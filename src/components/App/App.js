@@ -5,7 +5,7 @@ import Footer from '../Footer/Footer';
 import TaskList from '../TaskList/TaskList';
 
 export default class App extends Component {
-  maxId = 100;
+  startId = 0;
 
   state = {
     todoData: [
@@ -121,7 +121,7 @@ export default class App extends Component {
       editing: false,
       hidden: false,
       createTime:new Date(),
-      id: this.maxId++
+      id: this.startId++
     }
   }
 
