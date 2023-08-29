@@ -1,50 +1,54 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
-export default class NewTaskForm extends Component {
 
+export default class NewTaskForm extends Component {
   static propTypes = {
-    addItem: PropTypes.func.isRequired
-  }
+    addItem: PropTypes.func.isRequired,
+  };
 
   state = {
-    label: ''
-  }
+    label: '',
+  };
 
   onLabelChange = (e) => {
     this.setState({
-      label: e.target.value
-    })
-  }
+      label: e.target.value,
+    });
+  };
 
   onSubmit = (e) => {
+    const { label } = this.state;
+    const { addItem } = this.props;
     e.preventDefault();
-    if (!(this.state.label).trim()) {
+    if (!label.trim()) {
       this.setState({
-        label: ''
-      })
+        label: '',
+      });
       return;
-    } else {
-      this.props.addItem(this.state.label);
-      this.setState({
-        label: ''
-      })
-    };
-  }
+    }
+    addItem(label);
+    this.setState({
+      label: '',
+    });
+  };
 
   enterPress = (e) => {
     if (e.keyCode === 13) {
       this.onSubmit(e);
     }
-  }
+  };
 
-  render () {
-
-    return <input 
-      className="new-todo"
-      placeholder="What needs to be done?"
-      autoFocus
-      value={this.state.label}
-      onChange = { this.onLabelChange }
-      onKeyDown  = { this.enterPress } />
+  render() {
+    const { label } = this.state;
+    return (
+      <input
+        className="new-todo"
+        placeholder="What needs to be done?"
+        autoFocus
+        value={label}
+        onChange={this.onLabelChange}
+        onKeyDown={this.enterPress}
+      />
+    );
   }
 }

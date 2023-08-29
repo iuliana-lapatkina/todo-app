@@ -1,15 +1,14 @@
 import React from 'react';
 
-import NewTaskForm from '../NewTaskForm/NewTaskForm'
+import NewTaskForm from '../NewTaskForm/NewTaskForm';
 
-const Header = ( { addItem } ) => {
-
+function Header({ addItem }) {
   return (
     <header className="header">
       <h1>todos</h1>
-      <NewTaskForm addItem = { addItem }/>
+      <NewTaskForm addItem={addItem} />
     </header>
-  )
+  );
 }
 
 export default Header;

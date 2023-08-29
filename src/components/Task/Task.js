@@ -1,78 +1,78 @@
 import React, { Component } from 'react';
-import { formatDistanceToNow } from 'date-fns'
+import { formatDistanceToNow } from 'date-fns';
 import PropTypes from 'prop-types';
-export default class Task extends Component {
 
+export default class Task extends Component {
   static defaultProps = {
-    createTime: new Date()
-  }
+    createTime: new Date(),
+  };
 
   static propTypes = {
     label: PropTypes.string.isRequired,
     createTime: PropTypes.instanceOf(Date),
     onToggleDone: PropTypes.func.isRequired,
     onDeleted: PropTypes.func.isRequired,
-    onEdited: PropTypes.func.isRequired, 
-    onToggleEdit: PropTypes.func.isRequired
-  }
+    onEdited: PropTypes.func.isRequired,
+    onToggleEdit: PropTypes.func.isRequired,
+  };
 
   state = {
-    label: ''
-  }
+    label: '',
+  };
 
   onLabelChange = (e) => {
     this.setState({
-      label: e.target.value
-    })
-  }
+      label: e.target.value,
+    });
+  };
 
   onSubmit = (e) => {
     e.preventDefault();
-    let id = this.props.id;
-    if (!(this.state.label).trim()) {
-      this.props.onEdited(this.props.label, id);
+    const { id, label, onEdited } = this.props;
+    const { label: stateLabel } = this.state;
+    if (!stateLabel.trim()) {
+      onEdited(label, id);
       this.setState({
-        label: (this.props.label)
-      })
+        label,
+      });
     } else {
-      this.props.onEdited(this.state.label, id);
+      onEdited(stateLabel, id);
       this.setState({
-        label: ''
-      })
-    };
-   
-  }
+        label: '',
+      });
+    }
+  };
 
   enterPress = (e) => {
     if (e.keyCode === 13) {
       this.onSubmit(e);
     }
-  }
+  };
 
-  render () {
-
+  render() {
     const { id, label, createTime, onToggleDone, onDeleted, onToggleEdit } = this.props;
 
-    let time = formatDistanceToNow(
-      createTime,
-      {includeSeconds: true}
-    )
+    const time = formatDistanceToNow(createTime, { includeSeconds: true });
 
     return (
       <>
-        <div className="view" >
-          <input id={ id } className="toggle" type="checkbox" onClick = { onToggleDone }/>
-          <label htmlFor={ id }  >
-            <span className="description">{ label }</span>
+        <div className="view">
+          <input id={id} className="toggle" type="checkbox" onClick={onToggleDone} />
+          <label htmlFor={id}>
+            <span className="description">{label}</span>
             <span className="created">created {time} ago</span>
           </label>
-          <button className="icon icon-edit" onClick = { onToggleEdit } ></button>
-          <button className="icon icon-destroy" onClick = { onDeleted } ></button>
-        </div> 
-        <input type="text" className="edit" defaultValue={ label } 
-          onSubmit={ this.onSubmit }
-          onChange = { this.onLabelChange }
-          onKeyDown  = { this.enterPress }></input>
+          <button type="button" className="icon icon-edit" onClick={onToggleEdit} />
+          <button type="button" className="icon icon-destroy" onClick={onDeleted} />
+        </div>
+        <input
+          type="text"
+          className="edit"
+          defaultValue={label}
+          onSubmit={this.onSubmit}
+          onChange={this.onLabelChange}
+          onKeyDown={this.enterPress}
+        />
       </>
     );
   }
