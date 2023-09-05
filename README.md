@@ -2,4 +2,4 @@
 Каждый этап создания приложения вынесен в отдельную ветку.
 
 ## приложение на Vercel:
-https://todo-app-liard-phi.vercel.app/
+todo-app-ruddy-gamma-43.vercel.app
