@@ -14,6 +14,7 @@ export default class Task extends Component {
     onDeleted: PropTypes.func.isRequired,
     onEdited: PropTypes.func.isRequired,
     onToggleEdit: PropTypes.func.isRequired,
+    onFocusOff: PropTypes.func.isRequired,
   };
 
   state = {
@@ -43,9 +44,22 @@ export default class Task extends Component {
     }
   };
 
+  onFocusOffInput = (e) => {
+    const { onFocusOff } = this.props;
+    const { label: stateLabel } = this.state;
+    this.setState({
+      label: stateLabel,
+    });
+    onFocusOff();
+  };
+
   enterPress = (e) => {
+    const { onFocusOff } = this.props;
     if (e.keyCode === 13) {
       this.onSubmit(e);
+    }
+    if (e.keyCode === 27) {
+      onFocusOff();
     }
   };
 
@@ -72,6 +86,7 @@ export default class Task extends Component {
           onSubmit={this.onSubmit}
           onChange={this.onLabelChange}
           onKeyDown={this.enterPress}
+          onBlur={this.onFocusOffInput}
         />
       </>
     );

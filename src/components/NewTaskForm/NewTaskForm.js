@@ -36,6 +36,11 @@ export default class NewTaskForm extends Component {
     if (e.keyCode === 13) {
       this.onSubmit(e);
     }
+    if (e.keyCode === 27) {
+      this.setState({
+        label: '',
+      });
+    }
   };
 
   render() {

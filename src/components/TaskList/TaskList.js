@@ -1,5 +1,6 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
+import classNames from 'classnames/bind';
 
 import Task from '../Task/Task';
 
@@ -20,24 +21,15 @@ export default class TaskList extends Component {
   };
 
   render() {
-    const { todos, onToggleDone, onDeleted, onEdited, onToggleEdit } = this.props;
+    const { todos, onToggleDone, onDeleted, onEdited, onToggleEdit, onFocusOff } = this.props;
 
     const elements = todos.map((item) => {
       const { id, done, hidden, editing, ...itemProps } = item;
 
-      let classNames = 'todo-list-item';
-      if (editing) {
-        classNames += ' editing';
-      }
-      if (done) {
-        classNames += ' completed';
-      }
-      if (hidden) {
-        classNames += ' hidden';
-      }
+      const liClassName = classNames('todo-list-item', { editing: item.editing, completed: done, hidden: item.hidden });
 
       return (
-        <li key={id} className={classNames}>
+        <li key={id} className={liClassName}>
           <Task
             id={id}
             {...itemProps}
@@ -45,6 +37,7 @@ export default class TaskList extends Component {
             onDeleted={() => onDeleted(id)}
             onEdited={onEdited}
             onToggleEdit={() => onToggleEdit(id)}
+            onFocusOff={() => onFocusOff(id)}
           />
         </li>
       );
