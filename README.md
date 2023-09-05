@@ -3,4 +3,6 @@
 
 ## приложение на Vercel:
 [todo-app-ruddy-gamma-43.vercel.app
-](https://todo-app-ruddy-gamma-43.vercel.app/)https://todo-app-ruddy-gamma-43.vercel.app/
+](https://todo-app-ruddy-gamma-43.vercel.app/)
+
+https://todo-app-ruddy-gamma-43.vercel.app/
