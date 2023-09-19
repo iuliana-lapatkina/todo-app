@@ -9,16 +9,16 @@ export default class App extends Component {
 
   state = {
     todoData: [
-      this.createTodoItem('Completed task'),
-      this.createTodoItem('Editing task'),
-      this.createTodoItem('Active task'),
+      this.createTodoItem('Completed', 1, 0),
+      this.createTodoItem('Editing', 0, 10),
+      this.createTodoItem('Active', 0, 4),
     ],
     currentFilter: 'All',
   };
 
-  addItem = (label) => {
+  addItem = (label, min, sec) => {
     this.setState(({ todoData }) => {
-      const newItem = this.createTodoItem(label);
+      const newItem = this.createTodoItem(label, min, sec);
       return {
         todoData: [...todoData, newItem],
       };
@@ -47,6 +47,18 @@ export default class App extends Component {
     this.onToggleEdit(id);
   };
 
+  editItemTime = (newMin, newSec, id) => {
+    this.setState(({ todoData }) => {
+      const index = todoData.findIndex((el) => el.id === id);
+      const oldItem = todoData[index];
+      const newItem = { ...oldItem, min: newMin, sec: newSec };
+      const newData = [...todoData.slice(0, index), newItem, ...todoData.slice(index + 1)];
+      return {
+        todoData: newData,
+      };
+    });
+  };
+
   onToggleDone = (id) => {
     this.setState(({ todoData }) => {
       return {
@@ -59,6 +71,14 @@ export default class App extends Component {
     this.setState(({ todoData }) => {
       return {
         todoData: this.toggleProperty(todoData, id, 'editing'),
+      };
+    });
+  };
+
+  onToggleTimer = (id) => {
+    this.setState(({ todoData }) => {
+      return {
+        todoData: this.toggleProperty(todoData, id, 'onTimer'),
       };
     });
   };
@@ -126,14 +146,23 @@ export default class App extends Component {
     return [...arr.slice(0, index), newItem, ...arr.slice(index + 1)];
   }
 
-  createTodoItem(label) {
+  createTodoItem(label, min, sec) {
+    let newMin = Number(min);
+    let newSec = Number(sec);
+    while (newSec > 60) {
+      newMin += 1;
+      newSec -= 60;
+    }
     return {
       label,
+      min: newMin,
+      sec: newSec,
       done: false,
       editing: false,
       hidden: false,
       createTime: new Date(),
       id: this.startId++,
+      onTimer: false,
     };
   }
 
@@ -141,7 +170,7 @@ export default class App extends Component {
     const { todoData, currentFilter } = this.state;
     const doneCount = todoData.filter((el) => el.done).length;
     const todoCount = todoData.length - doneCount;
-
+    console.log(todoData);
     return (
       <section className="todoapp">
         <Header addItem={this.addItem} />
@@ -150,9 +179,11 @@ export default class App extends Component {
             todos={todoData}
             onDeleted={this.deleteItem}
             onToggleDone={this.onToggleDone}
+            onToggleTimer={this.onToggleTimer}
             onEdited={this.ediItem}
             onToggleEdit={this.onToggleEdit}
             onFocusOff={this.onFocusOff}
+            editItemTime={this.editItemTime}
           />
           <Footer
             todoCount={todoCount}

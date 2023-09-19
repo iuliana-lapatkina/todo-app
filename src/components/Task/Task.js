@@ -17,8 +17,42 @@ export default class Task extends Component {
     onFocusOff: PropTypes.func.isRequired,
   };
 
-  state = {
-    label: '',
+  constructor(props) {
+    super(props);
+    this.state = {
+      label: '',
+      min: props.min,
+      sec: props.sec,
+    };
+  }
+
+  componentWillUnmount() {
+    clearInterval(this.myInterval);
+  }
+
+  startTimer = () => {
+    const { onToggleTimer } = this.props;
+    this.myInterval = setInterval(() => {
+      const { min, sec } = this.state;
+      const { id, editItemTime } = this.props;
+      if (sec > 0) {
+        this.setState({
+          sec: sec - 1,
+        });
+      }
+      if (sec === 1) {
+        if (min === 0) {
+          clearInterval(this.myInterval);
+          onToggleTimer();
+        } else {
+          this.setState(() => ({
+            min: min - 1,
+            sec: 59,
+          }));
+        }
+      }
+      editItemTime(min, sec, id);
+    }, 1000);
   };
 
   onLabelChange = (e) => {
@@ -64,8 +98,8 @@ export default class Task extends Component {
   };
 
   render() {
-    const { id, label, createTime, onToggleDone, onDeleted, onToggleEdit } = this.props;
-
+    const { id, label, onTimer, createTime, onToggleDone, onToggleTimer, onDeleted, onToggleEdit } = this.props;
+    const { min, sec } = this.state;
     const time = formatDistanceToNow(createTime, { includeSeconds: true });
 
     return (
@@ -73,8 +107,32 @@ export default class Task extends Component {
         <div className="view">
           <input id={id} className="toggle" type="checkbox" onClick={onToggleDone} />
           <label htmlFor={id}>
-            <span className="description">{label}</span>
-            <span className="created">created {time} ago</span>
+            <span className="title">{label}</span>
+            <span className="description">
+              {!onTimer ? (
+                <button
+                  className="icon icon-play"
+                  type="button"
+                  onClick={() => {
+                    if (sec !== 0 || min !== 0) {
+                      onToggleTimer();
+                      this.startTimer();
+                    }
+                  }}
+                />
+              ) : (
+                <button
+                  className="icon icon-pause"
+                  type="button"
+                  onClick={() => {
+                    onToggleTimer();
+                    clearInterval(this.myInterval);
+                  }}
+                />
+              )}
+              {min}:{sec < 10 ? `0${sec}` : sec}
+            </span>
+            <span className="description">created {time} ago</span>
           </label>
           <button type="button" className="icon icon-edit" onClick={onToggleEdit} />
           <button type="button" className="icon icon-destroy" onClick={onDeleted} />
