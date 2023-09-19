@@ -26,6 +26,13 @@ export default class Task extends Component {
     };
   }
 
+  componentDidMount() {
+    const { onTimer } = this.props;
+    if (onTimer) {
+      this.startTimer();
+    }
+  }
+
   componentWillUnmount() {
     clearInterval(this.myInterval);
   }
@@ -40,7 +47,7 @@ export default class Task extends Component {
           sec: sec - 1,
         });
       }
-      if (sec === 1) {
+      if (sec === 0) {
         if (min === 0) {
           clearInterval(this.myInterval);
           onToggleTimer();
@@ -51,7 +58,7 @@ export default class Task extends Component {
           }));
         }
       }
-      editItemTime(min, sec, id);
+      editItemTime(min, sec - 1, id);
     }, 1000);
   };
 

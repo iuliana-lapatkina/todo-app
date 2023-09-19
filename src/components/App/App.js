@@ -8,13 +8,32 @@ export default class App extends Component {
   startId = 1;
 
   state = {
-    todoData: [
-      this.createTodoItem('Completed', 1, 0),
-      this.createTodoItem('Editing', 0, 10),
-      this.createTodoItem('Active', 0, 4),
-    ],
+    todoData: [],
     currentFilter: 'All',
   };
+
+  componentDidMount() {
+    if (localStorage.length !== 0) {
+      this.setState(() => {
+        const newData = JSON.parse(localStorage.getItem('todoData'));
+        newData.map((item) => {
+          let newTime = item.createTime;
+          newTime = new Date(newTime);
+          return (item.createTime = newTime);
+        });
+        return {
+          todoData: newData,
+        };
+      });
+      this.startId = localStorage.getItem('startId');
+    }
+  }
+
+  componentDidUpdate() {
+    const { todoData } = this.state;
+    localStorage.setItem('todoData', JSON.stringify(todoData));
+    localStorage.setItem('startId', this.startId);
+  }
 
   addItem = (label, min, sec) => {
     this.setState(({ todoData }) => {
@@ -100,7 +119,7 @@ export default class App extends Component {
     const newCurrentFilter = status;
     let doneId = [];
     this.allVisible();
-    this.setState(({ todoData, currentFilter }) => {
+    this.setState(({ todoData }) => {
       if (status === 'Active') {
         doneId = todoData.filter((el) => el.done).map((el) => el.id);
       }
