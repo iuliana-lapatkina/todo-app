@@ -189,6 +189,7 @@ export default class App extends Component {
     const { todoData, currentFilter } = this.state;
     const doneCount = todoData.filter((el) => el.done).length;
     const todoCount = todoData.length - doneCount;
+
     return (
       <section className="todoapp">
         <Header addItem={this.addItem} />
