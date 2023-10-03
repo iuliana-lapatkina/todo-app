@@ -5,47 +5,46 @@ import classNames from 'classnames/bind';
 import Task from '../Task/Task';
 
 // eslint-disable-next-line react/prefer-stateless-function
-export default class TaskList extends Component {
-  static defaultProps = {
-    todos: [],
-    editing: false,
-    hidden: false,
-    done: false,
-  };
+function TaskList(props) {
+  const { todos, onToggleDone, onDeleted, onEdited, editItemTime, onToggleEdit, onToggleTimer, onFocusOff } = props;
 
-  static propTypes = {
-    todos: PropTypes.instanceOf(Array),
-    editing: PropTypes.bool,
-    hidden: PropTypes.bool,
-    done: PropTypes.bool,
-  };
+  const elements = todos.map((item) => {
+    const { id, done, hidden, editing, ...itemProps } = item;
 
-  render() {
-    const { todos, onToggleDone, onDeleted, onEdited, editItemTime, onToggleEdit, onToggleTimer, onFocusOff } =
-      this.props;
+    const liClassName = classNames('todo-list-item', { editing: item.editing, completed: done, hidden: item.hidden });
 
-    const elements = todos.map((item) => {
-      const { id, done, hidden, editing, ...itemProps } = item;
+    return (
+      <li key={id} className={liClassName}>
+        <Task
+          id={id}
+          {...itemProps}
+          onToggleDone={() => onToggleDone(id)}
+          onDeleted={() => onDeleted(id)}
+          onEdited={onEdited}
+          onToggleEdit={() => onToggleEdit(id)}
+          onToggleTimer={() => onToggleTimer(id)}
+          onFocusOff={() => onFocusOff(id)}
+          editItemTime={editItemTime}
+        />
+      </li>
+    );
+  });
 
-      const liClassName = classNames('todo-list-item', { editing: item.editing, completed: done, hidden: item.hidden });
-
-      return (
-        <li key={id} className={liClassName}>
-          <Task
-            id={id}
-            {...itemProps}
-            onToggleDone={() => onToggleDone(id)}
-            onDeleted={() => onDeleted(id)}
-            onEdited={onEdited}
-            onToggleEdit={() => onToggleEdit(id)}
-            onToggleTimer={() => onToggleTimer(id)}
-            onFocusOff={() => onFocusOff(id)}
-            editItemTime={editItemTime}
-          />
-        </li>
-      );
-    });
-
-    return <ul className="task-list">{elements}</ul>;
-  }
+  return <ul className="task-list">{elements}</ul>;
 }
+
+TaskList.defaultProps = {
+  todos: [],
+  editing: false,
+  hidden: false,
+  done: false,
+};
+
+TaskList.propTypes = {
+  todos: PropTypes.instanceOf(Array),
+  editing: PropTypes.bool,
+  hidden: PropTypes.bool,
+  done: PropTypes.bool,
+};
+
+export default TaskList;

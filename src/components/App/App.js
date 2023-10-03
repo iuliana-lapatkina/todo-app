@@ -1,173 +1,37 @@
-import React, { Component } from 'react';
+import React, { useState, useEffect } from 'react';
 
 import Header from '../Header/Header';
 import Footer from '../Footer/Footer';
 import TaskList from '../TaskList/TaskList';
 
-export default class App extends Component {
-  startId = 1;
-
-  state = {
-    todoData: [],
-    currentFilter: 'All',
-  };
-
-  componentDidMount() {
+function App() {
+  const [currentFilter, setCurrentFilter] = useState('All');
+  const [startId, setStartId] = useState(localStorage.getItem('startId') || 1);
+  const [todoData, setTodoData] = useState(() => {
     if (localStorage.length !== 0) {
-      this.setState(() => {
-        const newData = JSON.parse(localStorage.getItem('todoData'));
-        newData.map((item) => {
-          let newTime = item.createTime;
-          newTime = new Date(newTime);
-          return (item.createTime = newTime);
-        });
-        return {
-          todoData: newData,
-        };
+      const newData = JSON.parse(localStorage.getItem('todoData'));
+      newData.map((item) => {
+        let newTime = item.createTime;
+        newTime = new Date(newTime);
+        return (item.createTime = newTime);
       });
-      this.startId = localStorage.getItem('startId');
+      return newData;
     }
-  }
+    return [];
+  });
 
-  componentDidUpdate() {
-    const { todoData } = this.state;
+  const doneCount = todoData.filter((el) => el.done).length;
+  const todoCount = todoData.length - doneCount;
+
+  useEffect(() => {
     localStorage.setItem('todoData', JSON.stringify(todoData));
-    localStorage.setItem('startId', this.startId);
-  }
+    localStorage.setItem('startId', startId);
+  }, [todoData, startId]);
 
-  addItem = (label, min, sec) => {
-    this.setState(({ todoData }) => {
-      const newItem = this.createTodoItem(label, min, sec);
-      return {
-        todoData: [...todoData, newItem],
-      };
-    });
-  };
-
-  deleteItem = (id) => {
-    this.setState(({ todoData }) => {
-      const newArray = todoData.filter((item) => item.id !== id);
-      return {
-        todoData: newArray,
-      };
-    });
-  };
-
-  ediItem = (newLabel, id) => {
-    this.setState(({ todoData }) => {
-      const index = todoData.findIndex((el) => el.id === id);
-      const oldItem = todoData[index];
-      const newItem = { ...oldItem, label: newLabel };
-      const newData = [...todoData.slice(0, index), newItem, ...todoData.slice(index + 1)];
-      return {
-        todoData: newData,
-      };
-    });
-    this.onToggleEdit(id);
-  };
-
-  editItemTime = (newMin, newSec, id) => {
-    this.setState(({ todoData }) => {
-      const index = todoData.findIndex((el) => el.id === id);
-      const oldItem = todoData[index];
-      const newItem = { ...oldItem, min: newMin, sec: newSec };
-      const newData = [...todoData.slice(0, index), newItem, ...todoData.slice(index + 1)];
-      return {
-        todoData: newData,
-      };
-    });
-  };
-
-  onToggleDone = (id) => {
-    this.setState(({ todoData }) => {
-      return {
-        todoData: this.toggleProperty(todoData, id, 'done'),
-      };
-    });
-  };
-
-  onToggleEdit = (id) => {
-    this.setState(({ todoData }) => {
-      return {
-        todoData: this.toggleProperty(todoData, id, 'editing'),
-      };
-    });
-  };
-
-  onToggleTimer = (id) => {
-    this.setState(({ todoData }) => {
-      return {
-        todoData: this.toggleProperty(todoData, id, 'onTimer'),
-      };
-    });
-  };
-
-  onFocusOff = (id) => {
-    this.setState(({ todoData }) => {
-      const index = todoData.findIndex((el) => el.id === id);
-      const oldItem = todoData[index];
-      const newItem = { ...oldItem, editing: false };
-      const newData = [...todoData.slice(0, index), newItem, ...todoData.slice(index + 1)];
-
-      return {
-        todoData: newData,
-      };
-    });
-  };
-
-  onFiltered = (status) => {
-    const newCurrentFilter = status;
-    let doneId = [];
-    this.allVisible();
-    this.setState(({ todoData }) => {
-      if (status === 'Active') {
-        doneId = todoData.filter((el) => el.done).map((el) => el.id);
-      }
-      if (status === 'Completed') {
-        doneId = todoData.filter((el) => !el.done).map((el) => el.id);
-      }
-
-      const newArr = [...todoData];
-      doneId.forEach((id) => {
-        let newItem = todoData.find((el) => el.id === id);
-        newItem = { ...newItem, hidden: true };
-        const newItemIndx = todoData.findIndex((el) => el.id === id);
-        newArr[newItemIndx] = newItem;
-      });
-      return {
-        todoData: newArr,
-        currentFilter: newCurrentFilter,
-      };
-    });
-  };
-
-  allVisible = () => {
-    this.setState(({ todoData }) => {
-      const newData = [...todoData];
-      newData.map((el) => (el.hidden = false));
-      return {
-        todoData: newData,
-      };
-    });
-  };
-
-  clearCompleted = () => {
-    const { todoData } = this.state;
-    const doneArray = todoData.filter((el) => el.done);
-    doneArray.forEach((item) => this.deleteItem(item.id));
-  };
-
-  toggleProperty(arr, id, propName) {
-    const index = arr.findIndex((el) => el.id === id);
-    const oldItem = arr[index];
-    const newItem = { ...oldItem, [propName]: !oldItem[propName] };
-
-    return [...arr.slice(0, index), newItem, ...arr.slice(index + 1)];
-  }
-
-  createTodoItem(label, min, sec) {
+  const createTodoItem = (label, min, sec) => {
     let newMin = Number(min);
     let newSec = Number(sec);
+    setStartId(Number(startId) + 1);
     while (newSec > 60) {
       newMin += 1;
       newSec -= 60;
@@ -180,38 +44,124 @@ export default class App extends Component {
       editing: false,
       hidden: false,
       createTime: new Date(),
-      id: this.startId++,
+      id: startId,
       onTimer: false,
     };
-  }
+  };
 
-  render() {
-    const { todoData, currentFilter } = this.state;
-    const doneCount = todoData.filter((el) => el.done).length;
-    const todoCount = todoData.length - doneCount;
+  const toggleProperty = (arr, id, propName) => {
+    const index = arr.findIndex((el) => el.id === id);
+    const oldItem = arr[index];
+    const newItem = { ...oldItem, [propName]: !oldItem[propName] };
 
-    return (
-      <section className="todoapp">
-        <Header addItem={this.addItem} />
-        <section className="main">
-          <TaskList
-            todos={todoData}
-            onDeleted={this.deleteItem}
-            onToggleDone={this.onToggleDone}
-            onToggleTimer={this.onToggleTimer}
-            onEdited={this.ediItem}
-            onToggleEdit={this.onToggleEdit}
-            onFocusOff={this.onFocusOff}
-            editItemTime={this.editItemTime}
-          />
-          <Footer
-            todoCount={todoCount}
-            clearCompleted={this.clearCompleted}
-            onFiltered={this.onFiltered}
-            currentFilter={currentFilter}
-          />
-        </section>
+    return [...arr.slice(0, index), newItem, ...arr.slice(index + 1)];
+  };
+
+  const onToggleDone = (id) => {
+    setTodoData(toggleProperty(todoData, id, 'done'));
+  };
+
+  const onToggleEdit = (id) => {
+    setTodoData(toggleProperty(todoData, id, 'editing'));
+  };
+
+  const onToggleTimer = (id) => {
+    setTodoData(toggleProperty(todoData, id, 'onTimer'));
+  };
+
+  const addItem = (label, min, sec) => {
+    const newItem = createTodoItem(label, min, sec);
+    setTodoData([...todoData, newItem]);
+  };
+
+  const deleteItem = (id) => {
+    const newArray = todoData.filter((item) => item.id !== id);
+    setTodoData(newArray);
+  };
+
+  const ediItem = (newLabel, id) => {
+    const index = todoData.findIndex((el) => el.id === id);
+    const oldItem = todoData[index];
+    const newItem = { ...oldItem, label: newLabel, editing: false };
+    const newData = [...todoData.slice(0, index), newItem, ...todoData.slice(index + 1)];
+    setTodoData(newData);
+  };
+
+  const editItemTime = (newMin, newSec, id) => {
+    const index = todoData.findIndex((el) => el.id === id);
+    const oldItem = todoData[index];
+    let newItem = { ...oldItem, min: newMin, sec: newSec };
+    if (newMin === 0 && newSec === 0) {
+      newItem = { ...oldItem, min: newMin, sec: newSec, onTimer: false };
+    }
+    const newData = [...todoData.slice(0, index), newItem, ...todoData.slice(index + 1)];
+    setTodoData(newData);
+  };
+
+  const onFocusOff = (id) => {
+    const index = todoData.findIndex((el) => el.id === id);
+    const oldItem = todoData[index];
+    const newItem = { ...oldItem, editing: false };
+    const newData = [...todoData.slice(0, index), newItem, ...todoData.slice(index + 1)];
+    setTodoData(newData);
+  };
+
+  const allVisible = () => {
+    const newData = [...todoData];
+    newData.map((el) => (el.hidden = false));
+    setTodoData(newData);
+  };
+
+  const onFiltered = (status) => {
+    const newCurrentFilter = status;
+    let doneId = [];
+    allVisible();
+    if (status === 'Active') {
+      doneId = todoData.filter((el) => el.done).map((el) => el.id);
+    }
+    if (status === 'Completed') {
+      doneId = todoData.filter((el) => !el.done).map((el) => el.id);
+    }
+
+    const newArr = [...todoData];
+    doneId.forEach((id) => {
+      let newItem = todoData.find((el) => el.id === id);
+      newItem = { ...newItem, hidden: true };
+      const newItemIndx = todoData.findIndex((el) => el.id === id);
+      newArr[newItemIndx] = newItem;
+    });
+    setTodoData(newArr);
+    setCurrentFilter(newCurrentFilter);
+  };
+
+  const clearCompleted = () => {
+    const doneArray = todoData.filter((el) => el.done);
+    doneArray.forEach((item) => deleteItem(item.id));
+  };
+
+  return (
+    <section className="todoapp">
+      <Header addItem={addItem} />
+      <section className="main">
+        <TaskList
+          todos={todoData}
+          onDeleted={deleteItem}
+          onToggleDone={onToggleDone}
+          onToggleTimer={onToggleTimer}
+          onEdited={ediItem}
+          onToggleEdit={onToggleEdit}
+          onFocusOff={onFocusOff}
+          editItemTime={editItemTime}
+        />
+        <Footer
+          todoCount={todoCount}
+          clearCompleted={clearCompleted}
+          onFiltered={onFiltered}
+          currentFilter={currentFilter}
+        />
       </section>
-    );
-  }
+    </section>
+  );
 }
+
+export default App;

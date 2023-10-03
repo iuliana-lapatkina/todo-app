@@ -1,101 +1,86 @@
-import React, { Component } from 'react';
+import React, { useState } from 'react';
 import PropTypes from 'prop-types';
 
-export default class NewTaskForm extends Component {
-  static propTypes = {
-    addItem: PropTypes.func.isRequired,
+function NewTaskForm(props) {
+  const { addItem } = props;
+
+  const [label, setLabel] = useState('');
+  const [min, setMin] = useState('');
+  const [sec, setSec] = useState('');
+
+  const onLabelChange = (e) => {
+    setLabel(e.target.value);
   };
 
-  state = {
-    label: '',
-    min: '',
-    sec: '',
-  };
-
-  onLabelChange = (e) => {
-    this.setState({
-      label: e.target.value,
-    });
-  };
-
-  onMinChange = (e) => {
+  const onMinChange = (e) => {
     if (Number(e.target.value) >= 0) {
-      this.setState({
-        min: Number(e.target.value),
-      });
+      setMin(Number(e.target.value));
     }
   };
 
-  onSecChange = (e) => {
+  const onSecChange = (e) => {
     if (Number(e.target.value) >= 0) {
-      this.setState({
-        sec: Number(e.target.value),
-      });
+      setSec(Number(e.target.value));
     }
   };
 
-  onSubmit = (e) => {
-    const { label, min, sec } = this.state;
-    const { addItem } = this.props;
+  const resetValues = () => {
+    setLabel('');
+    setMin('');
+    setSec('');
+  };
+
+  const onSubmit = (e) => {
     e.preventDefault();
     if (!label.trim()) {
-      this.setState({
-        label: '',
-        min: '',
-        sec: '',
-      });
+      resetValues();
       return;
     }
     addItem(label, min, sec);
-    this.setState({
-      label: '',
-      min: '',
-      sec: '',
-    });
+    resetValues();
   };
 
-  enterPress = (e) => {
+  const enterPress = (e) => {
     if (e.keyCode === 13) {
-      this.onSubmit(e);
+      onSubmit(e);
     }
     if (e.keyCode === 27) {
-      this.setState({
-        label: '',
-        min: '',
-        sec: '',
-      });
+      resetValues();
     }
   };
 
-  render() {
-    const { label, min, sec } = this.state;
-    return (
-      <form className="new-todo-form">
-        <input
-          className="new-todo"
-          placeholder="What needs to be done?"
-          autoFocus
-          value={label}
-          onChange={this.onLabelChange}
-          onKeyDown={this.enterPress}
-        />
-        <input
-          className="new-todo-form__timer"
-          placeholder="Min"
-          autoFocus
-          value={min}
-          onKeyDown={this.enterPress}
-          onChange={this.onMinChange}
-        />
-        <input
-          className="new-todo-form__timer"
-          placeholder="Sec"
-          autoFocus
-          value={sec}
-          onKeyDown={this.enterPress}
-          onChange={this.onSecChange}
-        />
-      </form>
-    );
-  }
+  return (
+    <form className="new-todo-form">
+      <input
+        className="new-todo"
+        placeholder="What needs to be done?"
+        autoFocus
+        value={label}
+        onChange={onLabelChange}
+        onKeyDown={enterPress}
+      />
+      <input
+        className="new-todo-form__timer"
+        placeholder="Min"
+        autoFocus
+        value={min}
+        onKeyDown={enterPress}
+        onChange={onMinChange}
+      />
+      <input
+        className="new-todo-form__timer"
+        placeholder="Sec"
+        autoFocus
+        value={sec}
+        onKeyDown={enterPress}
+        onChange={onSecChange}
+      />
+    </form>
+  );
 }
+
+NewTaskForm.propTypes = {
+  addItem: PropTypes.func.isRequired,
+};
+
+export default NewTaskForm;

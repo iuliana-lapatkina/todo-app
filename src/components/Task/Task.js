@@ -1,159 +1,143 @@
-import React, { Component } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { formatDistanceToNow } from 'date-fns';
 import PropTypes from 'prop-types';
 
-export default class Task extends Component {
-  static defaultProps = {
-    createTime: new Date(),
-  };
+function Task(props) {
+  const {
+    min: minutes,
+    sec: seconds,
+    id,
+    label,
+    editItemTime,
+    onFocusOff,
+    onEdited,
+    onTimer,
+    createTime,
+    onToggleDone,
+    onToggleTimer,
+    onDeleted,
+    onToggleEdit,
+  } = props;
+  const time = formatDistanceToNow(createTime, { includeSeconds: true });
+  let interval;
 
-  static propTypes = {
-    label: PropTypes.string.isRequired,
-    createTime: PropTypes.instanceOf(Date),
-    onToggleDone: PropTypes.func.isRequired,
-    onDeleted: PropTypes.func.isRequired,
-    onEdited: PropTypes.func.isRequired,
-    onToggleEdit: PropTypes.func.isRequired,
-    onFocusOff: PropTypes.func.isRequired,
-  };
+  const [taskLabel, setTaskLabel] = useState('');
+  const [min, setMin] = useState(minutes);
+  const [sec, setSec] = useState(seconds);
 
-  constructor(props) {
-    super(props);
-    this.state = {
-      label: '',
-      min: props.min,
-      sec: props.sec,
-    };
-  }
-
-  componentDidMount() {
-    const { onTimer } = this.props;
-    if (onTimer) {
-      this.startTimer();
-    }
-  }
-
-  componentWillUnmount() {
-    clearInterval(this.myInterval);
-  }
-
-  startTimer = () => {
-    const { onToggleTimer } = this.props;
-    this.myInterval = setInterval(() => {
-      const { min, sec } = this.state;
-      const { id, editItemTime } = this.props;
+  const startTimer = () => {
+    interval = setTimeout(() => {
       if (sec > 0) {
-        this.setState({
-          sec: sec - 1,
-        });
+        setSec(sec - 1);
       }
       if (sec === 0) {
         if (min === 0) {
-          clearInterval(this.myInterval);
-          onToggleTimer();
+          clearInterval(interval);
         } else {
-          this.setState(() => ({
-            min: min - 1,
-            sec: 59,
-          }));
+          setSec(59);
+          setMin(min - 1);
         }
       }
-      editItemTime(min, sec - 1, id);
+      editItemTime(min, sec, id);
     }, 1000);
   };
 
-  onLabelChange = (e) => {
-    this.setState({
-      label: e.target.value,
-    });
+  useEffect(() => {
+    if (onTimer) {
+      startTimer();
+    }
+    return () => clearInterval(interval);
+  });
+
+  const onLabelChange = (e) => {
+    setTaskLabel(e.target.value);
   };
 
-  onSubmit = (e) => {
+  const onSubmit = (e) => {
     e.preventDefault();
-    const { id, label, onEdited } = this.props;
-    const { label: stateLabel } = this.state;
-    if (!stateLabel.trim()) {
+    if (!taskLabel.trim()) {
       onEdited(label, id);
-      this.setState({
-        label,
-      });
+      setTaskLabel(label);
     } else {
-      onEdited(stateLabel, id);
-      this.setState({
-        label: '',
-      });
+      onEdited(taskLabel, id);
+      setTaskLabel('');
     }
   };
 
-  onFocusOffInput = (e) => {
-    const { onFocusOff } = this.props;
-    const { label: stateLabel } = this.state;
-    this.setState({
-      label: stateLabel,
-    });
+  const onFocusOffInput = (e) => {
+    setTaskLabel(taskLabel);
     onFocusOff();
   };
 
-  enterPress = (e) => {
-    const { onFocusOff } = this.props;
+  const enterPress = (e) => {
     if (e.keyCode === 13) {
-      this.onSubmit(e);
+      onSubmit(e);
     }
     if (e.keyCode === 27) {
       onFocusOff();
     }
   };
 
-  render() {
-    const { id, label, onTimer, createTime, onToggleDone, onToggleTimer, onDeleted, onToggleEdit } = this.props;
-    const { min, sec } = this.state;
-    const time = formatDistanceToNow(createTime, { includeSeconds: true });
-
-    return (
-      <>
-        <div className="view">
-          <input id={id} className="toggle" type="checkbox" onClick={onToggleDone} />
-          <label htmlFor={id}>
-            <span className="title">{label}</span>
-            <span className="description">
-              {!onTimer ? (
-                <button
-                  className="icon icon-play"
-                  type="button"
-                  onClick={() => {
-                    if (sec !== 0 || min !== 0) {
-                      onToggleTimer();
-                      this.startTimer();
-                    }
-                  }}
-                />
-              ) : (
-                <button
-                  className="icon icon-pause"
-                  type="button"
-                  onClick={() => {
+  return (
+    <>
+      <div className="view">
+        <input id={id} className="toggle" type="checkbox" onClick={onToggleDone} />
+        <label htmlFor={id}>
+          <span className="title">{label}</span>
+          <span className="description">
+            {!onTimer ? (
+              <button
+                className="icon icon-play"
+                type="button"
+                onClick={() => {
+                  if (sec !== 0 || min !== 0) {
                     onToggleTimer();
-                    clearInterval(this.myInterval);
-                  }}
-                />
-              )}
-              {min}:{sec < 10 ? `0${sec}` : sec}
-            </span>
-            <span className="description">created {time} ago</span>
-          </label>
-          <button type="button" className="icon icon-edit" onClick={onToggleEdit} />
-          <button type="button" className="icon icon-destroy" onClick={onDeleted} />
-        </div>
-        <input
-          type="text"
-          className="edit"
-          defaultValue={label}
-          onSubmit={this.onSubmit}
-          onChange={this.onLabelChange}
-          onKeyDown={this.enterPress}
-          onBlur={this.onFocusOffInput}
-        />
-      </>
-    );
-  }
+                    startTimer();
+                  }
+                }}
+              />
+            ) : (
+              <button
+                className="icon icon-pause"
+                type="button"
+                onClick={() => {
+                  onToggleTimer();
+                  clearInterval(interval);
+                }}
+              />
+            )}
+            {min}:{sec < 10 ? `0${sec}` : sec}
+          </span>
+          <span className="description">created {time} ago</span>
+        </label>
+        <button type="button" className="icon icon-edit" onClick={onToggleEdit} />
+        <button type="button" className="icon icon-destroy" onClick={onDeleted} />
+      </div>
+      <input
+        type="text"
+        className="edit"
+        defaultValue={label}
+        onSubmit={onSubmit}
+        onChange={onLabelChange}
+        onKeyDown={enterPress}
+        onBlur={onFocusOffInput}
+      />
+    </>
+  );
 }
+
+Task.defaultProps = {
+  createTime: new Date(),
+};
+
+Task.propTypes = {
+  label: PropTypes.string.isRequired,
+  createTime: PropTypes.instanceOf(Date),
+  onToggleDone: PropTypes.func.isRequired,
+  onDeleted: PropTypes.func.isRequired,
+  onEdited: PropTypes.func.isRequired,
+  onToggleEdit: PropTypes.func.isRequired,
+  onFocusOff: PropTypes.func.isRequired,
+};
+
+export default Task;
