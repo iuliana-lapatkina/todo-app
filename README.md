@@ -3,3 +3,6 @@
 
 ## приложение на Vercel:
 https://todo-app-liard-phi.vercel.app/
+
+## приложение на Vercel на хуках:
+https://todo-app-iuliana-lapatkina.vercel.app/
